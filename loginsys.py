@@ -13,7 +13,6 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -40,8 +39,8 @@ def login():
             return redirect(url_for('home'))
 
         else:
-            return 'Invalid username or password'
-
+            return redirect(url_for('login'))
+            
     return render_template('login.html')
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -49,10 +48,6 @@ def signup():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-
-        if len(password) < 8:
-            flash('비밀번호는 최소 8자리 이상이어야 합니다.', 'error')
-            return redirect(url_for('signup'))
 
         user = User.query.filter_by(username=username).first()
 
