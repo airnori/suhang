@@ -2,6 +2,7 @@ from flask import Flask, render_template, redirect, url_for, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask import flash
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
@@ -11,6 +12,7 @@ db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -48,10 +50,15 @@ def signup():
         username = request.form.get('username')
         password = request.form.get('password')
 
+        if len(password) < 8:
+            flash('비밀번호는 최소 8자리 이상이어야 합니다.', 'error')
+            return redirect(url_for('signup'))
+
         user = User.query.filter_by(username=username).first()
 
         if user:
-            return 'Username already exists'
+            flash('이미 존재하는 사용자명입니다.', 'error')
+            return redirect(url_for('signup'))
 
         new_user = User(username=username, password=generate_password_hash(password))
 
