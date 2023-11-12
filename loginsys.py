@@ -29,6 +29,9 @@ def home():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    username_invalid = False
+    password_invalid = False
+
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
@@ -38,13 +41,22 @@ def login():
             login_user(user)
             return redirect(url_for('home'))
 
+
         else:
-            return redirect(url_for('login'))
+            if username != request.form.get('username'):
+                username_invalid = True
+                return redirect(url_for('login'))
+            
+            else:
+                password_invalid = True
+                return redirect(url_for('login'))
             
     return render_template('login.html')
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
+    username_exists = False
+
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
@@ -52,17 +64,14 @@ def signup():
         user = User.query.filter_by(username=username).first()
 
         if user:
-            flash('이미 존재하는 사용자명입니다.', 'error')
-            return redirect(url_for('signup'))
+            username_exists = True
+        else:
+            new_user = User(username=username, password=generate_password_hash(password, method='pbkdf2:sha256'))
+            db.session.add(new_user)
+            db.session.commit()
+            return redirect(url_for('login'))
 
-        new_user = User(username=username, password=generate_password_hash(password))
-
-        db.session.add(new_user)
-        db.session.commit()
-
-        return redirect(url_for('login'))
-
-    return render_template('signup.html')
+    return render_template('signup.html', username_exists=username_exists)
 
 @app.route('/logout')
 @login_required

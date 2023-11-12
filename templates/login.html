@@ -13,6 +13,14 @@
         <input type="submit" value="Login">
     </form>
 
+    {% if username_invalid %}
+    <p>username invalid</p>
+    {% endif %}
+    
+    {% if password_invalid %}
+    <p>password invalid</p>
+    {% endif %}
+
     <p>Don't have an account? <a href="{{ url_for('signup') }}">Sign up</a></p>
 </body>
 </html>
